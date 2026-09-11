@@ -10,11 +10,14 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Init points the global TracerProvider at endpoint (host:port of Alloy's
@@ -60,4 +63,32 @@ func Init(ctx context.Context, serviceName, endpoint string) (func(context.Conte
 // semantic-convention attributes.
 func Middleware(serviceName string, h http.Handler) http.Handler {
 	return otelhttp.NewHandler(h, serviceName)
+}
+
+// Op runs fn inside a child span and records fn's error on it. The tracer
+// stays with the caller: OpenTelemetry names a tracer after the package being
+// instrumented, which this package cannot know.
+//
+// Every store and database method in these apps wraps its body this way, so a
+// slow query is its own span rather than time folded into the HTTP handler
+// that called it.
+func Op[T any](ctx context.Context, tracer trace.Tracer, span string, fn func(context.Context) (T, error), attrs ...attribute.KeyValue) (T, error) {
+	ctx, s := tracer.Start(ctx, span, trace.WithAttributes(attrs...))
+	defer s.End()
+	result, err := fn(ctx)
+	if err != nil {
+		s.RecordError(err)
+		s.SetStatus(codes.Error, err.Error())
+	}
+	return result, err
+}
+
+// Do is Op for work that returns no value. It exists because Go has no void
+// type parameter, so Op[struct{}] would make every call site carry a return
+// value it has to discard.
+func Do(ctx context.Context, tracer trace.Tracer, span string, fn func(context.Context) error, attrs ...attribute.KeyValue) error {
+	_, err := Op(ctx, tracer, span, func(ctx context.Context) (struct{}, error) {
+		return struct{}{}, fn(ctx)
+	}, attrs...)
+	return err
 }
