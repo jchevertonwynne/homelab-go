@@ -82,6 +82,12 @@ func Handler(fsys fs.FS, etags map[string]string) http.Handler {
 //
 // The zero modtime means no Last-Modified: the bytes are compiled in and have
 // no meaningful modification time, which is the whole reason the ETag is here.
+//
+// Set Content-Type yourself before calling. http.ServeContent infers it from
+// the name's extension via mime.TypeByExtension, which consults the system
+// mime database and so is not dependable for .svg across platforms — an icon
+// served as text/plain renders as markup. Both callers in the apps set it
+// explicitly; this does not guess on their behalf.
 func ServeBytes(w http.ResponseWriter, r *http.Request, name string, content []byte, tag string) {
 	w.Header().Set("ETag", tag)
 	w.Header().Set("Cache-Control", "no-cache")
