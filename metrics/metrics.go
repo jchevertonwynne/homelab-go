@@ -4,12 +4,11 @@
 // Storage and rendering are prometheus/client_golang's. This package owns
 // only the route-label decision, which no client library can make for us.
 //
-// The metric contract is frozen: jchevertonwynne/homelab builds one dashboard
-// panel per app, plus the AppErrorBurst alert, from these exact series names,
-// label names and label order. A rename produces an empty panel rather than
-// an error. So status stays a string label holding the numeric code (not
-// "code"), the labels stay in method/route/status order, and the buckets stay
-// DefBuckets.
+// The series names, label names and label order are a stable contract. A
+// dashboard or alert built against them keeps working; renaming one yields an
+// empty panel rather than an error, which is a silent failure. So status is a
+// string label holding the numeric code and is not named "code", the labels
+// stay in method/route/status order, and the buckets stay DefBuckets.
 package metrics
 
 import (
