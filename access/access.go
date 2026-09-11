@@ -8,8 +8,11 @@
 // behind a shared Middleware would move a deny decision out of the app that
 // makes it.
 //
-// What is shared is the part that must not drift: the header name, and what
-// counts as the same address.
+// What is shared is the part that must not drift: the header name, what counts
+// as the same address, and — as Allowlist — the set of addresses a hostname's
+// Access policy admits, which every app behind Access has to be told and none
+// of them can see for itself. Allowlist answers whether an address is on it.
+// Refusing the ones that are not is still the app's own line of code.
 package access
 
 import (
