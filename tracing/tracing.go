@@ -65,13 +65,12 @@ func Middleware(serviceName string, h http.Handler) http.Handler {
 	return otelhttp.NewHandler(h, serviceName)
 }
 
-// Op runs fn inside a child span and records fn's error on it. The tracer
-// stays with the caller: OpenTelemetry names a tracer after the package being
-// instrumented, which this package cannot know.
+// Op runs fn inside a child span and records fn's error on it. The tracer is
+// a parameter rather than package state: OpenTelemetry names a tracer after
+// the package being instrumented, which this package cannot know.
 //
-// Every store and database method in these apps wraps its body this way, so a
-// slow query is its own span rather than time folded into the HTTP handler
-// that called it.
+// Wrapping a store method's body this way makes a slow query its own span,
+// rather than time folded into the HTTP handler that called it.
 func Op[T any](ctx context.Context, tracer trace.Tracer, span string, fn func(context.Context) (T, error), attrs ...attribute.KeyValue) (T, error) {
 	ctx, s := tracer.Start(ctx, span, trace.WithAttributes(attrs...))
 	defer s.End()

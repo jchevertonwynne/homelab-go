@@ -1,10 +1,10 @@
 // Package etag computes strong ETags over content compiled into the binary,
 // and serves it so that a repeat request costs a 304.
 //
-// The apps had five copies of the same recipe. Truncating the digest to 16
-// bytes is a convention rather than a rule, which is exactly why it belongs
-// in one place: five copies of an arbitrary choice is five chances to pick a
-// different length and quietly change cache behaviour on one app.
+// The digest is truncated to 16 bytes. That length is a convention rather
+// than a requirement, so it lives here: changing it changes every validator
+// at once, and a validator that disagrees with the one a client cached costs
+// a full response where a 304 would have done.
 package etag
 
 import (

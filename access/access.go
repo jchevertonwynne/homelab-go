@@ -26,11 +26,10 @@ const EmailHeader = "Cf-Access-Authenticated-User-Email"
 // NormalizeEmail collapses case and surrounding whitespace, so "Alice@x.com"
 // and " alice@x.com " are one identity.
 //
-// Both halves of that matter and each app had learned only one: Access sends
-// the address however the identity provider spelled it, so comparing it
-// byte-for-byte to a configured owner turns a capital letter into a lockout;
-// and a hand-typed invitation that disagrees on case would otherwise create a
-// second, unreachable account.
+// Access sends the address however the identity provider spelled it, so
+// comparing it byte-for-byte to a configured address turns a capital letter
+// into a lockout. In the other direction, an address typed by hand that
+// disagrees on case would key a second, unreachable account.
 func NormalizeEmail(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
 }

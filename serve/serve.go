@@ -54,10 +54,9 @@ func Run(addr string, h http.Handler, opts ...Option) error {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: h,
-		// Not theoretical on a public hostname: without ReadHeaderTimeout one
-		// client holds a connection open indefinitely by dribbling out
-		// headers, and enough of those exhaust a 4GB Pi without ever
-		// completing a request.
+		// Without ReadHeaderTimeout one client can hold a connection open
+		// indefinitely by dribbling out headers, and enough of those exhaust
+		// the server without ever completing a request.
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      60 * time.Second,

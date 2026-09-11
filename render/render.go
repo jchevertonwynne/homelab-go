@@ -1,9 +1,9 @@
 // Package render executes an html/template into a buffer before writing it.
 //
-// Five apps had this, and notes wrote down why: the response is then either
-// the whole page or a clean 500. Executing straight into the ResponseWriter
-// commits a 200 and whatever bytes rendered before the failure, which is a
-// truncated page the browser has no way to recognise as broken.
+// The response is then either the whole page or a clean 500. Executing
+// straight into the ResponseWriter commits a 200 and whatever bytes rendered
+// before the failure, which is a truncated page the client has no way to
+// recognise as broken.
 package render
 
 import (
