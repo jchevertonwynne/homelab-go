@@ -1,0 +1,40 @@
+# golangci-lint v2. Run it with `make lint`; CI runs the same via the
+# golangci-lint-action step in .github/workflows/ci.yml.
+#
+# The v2 default set (errcheck, govet, ineffassign, staticcheck, unused)
+# stays on. The two extras below each catch a bug that reads as correct:
+#   bodyclose  - an HTTP response body left unclosed leaks its connection
+#   errorlint  - fmt.Errorf without %w, or == against an error that may be
+#                wrapped, both of which break errors.Is/As silently
+version: "2"
+
+linters:
+  enable:
+    - bodyclose
+    - errorlint
+
+  settings:
+    errcheck:
+      # Writes to an already-committed response or SSE stream: a failed write
+      # means the client has gone, and a handler has nothing useful to do
+      # about it. mime.AddExtensionType only errors on an extension with no
+      # leading dot, which is a compile-time constant here.
+      exclude-functions:
+        - (net/http.ResponseWriter).Write
+        - (*bytes.Buffer).WriteTo
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - mime.AddExtensionType
+
+  exclusions:
+    generated: lax
+    rules:
+      # Deferred Close/Rollback for cleanup: the useful error is the one from
+      # the operation itself, which is already checked at the call site.
+      - linters: [errcheck]
+        text: 'Error return value of `[^`]*\.(Close|Rollback)` is not checked'
+      # Test cleanup (Close on a temp DB or a response body) is not worth a
+      # check — a failure there fails the test through some other assertion.
+      - path: _test\.go
+        linters: [errcheck]
