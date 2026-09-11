@@ -24,12 +24,14 @@ an empty panel rather than an error, so nothing in `metrics` is safe to tidy:
 labels stay in `method`/`route`/`status` order, and the buckets stay
 `prometheus.DefBuckets`.
 
-## Consumers vendor this
+## Consuming it
 
-The module is private, so every app commits `vendor/` and its build needs no
-credential — that is the whole reason for vendoring rather than resolving it
-at build time. After bumping:
+Public on purpose. It was private to begin with, and every app then had to
+commit a `vendor/` tree so its image build needed no credential — 407 MB of
+third-party code across seven repos, because vendoring is all-or-nothing and
+one of those apps pulls in pure-Go SQLite. Nothing in here is worth that:
+a slog handler, an OTLP exporter setup, pprof wiring and one histogram.
 
 ```sh
-go get -u github.com/jchevertonwynne/homelab-go && go mod tidy && go mod vendor
+go get -u github.com/jchevertonwynne/homelab-go && go mod tidy
 ```
