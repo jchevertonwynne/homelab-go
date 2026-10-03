@@ -5,6 +5,5 @@
     ":dependencyDashboard",
     "helpers:pinGitHubActionDigests"
   ],
-  "timezone": "Europe/London",
-  "schedule": ["before 6am on monday"]
+  "timezone": "Europe/London"
 }
